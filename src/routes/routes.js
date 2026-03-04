@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const pizza = require('./pizza');
-const orders = require('./orderManager');
+const pizza = require('../models/pizza');
+const orders = require('../services/orderManager');
 
 router.get('/pizzas', (req, res) => {
   pizza.getAllPizzas((err, rows) => {

@@ -1,6 +1,6 @@
-const db = require('./database');
-const pizza = require('./pizza');
-const utils = require('./utils');
+const db = require('../database');
+const pizza = require('../models/pizza');
+const utils = require('../utils/utils');
 
 let lastOrderId = 0;
 
