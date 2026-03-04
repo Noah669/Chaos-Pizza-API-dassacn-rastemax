@@ -39,3 +39,7 @@ coverage/
 Thumbs.db
 
 test.sh
+
+# Sonar
+.sonarlint/
+.scannerwork/
