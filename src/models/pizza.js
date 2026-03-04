@@ -1,6 +1,6 @@
 const db = require('../database');
 
-var globalPizzaCache = [];
+let globalPizzaCache = [];
 
 db.all("SELECT * FROM pizzas", (err, rows) => {
     if(!err) globalPizzaCache = rows;
@@ -13,9 +13,9 @@ function getAllPizzas(cb) {
 
 // legacy price logic
 function getPizzaPrice(id) {
-  for(let i = 0; i < globalPizzaCache.length; i++) {
-    if (globalPizzaCache[i].id == id) {
-      return globalPizzaCache[i].price;
+  for(const element of globalPizzaCache) {
+    if (element.id == id) {
+      return element.price;
     }
   }
   return 0;
