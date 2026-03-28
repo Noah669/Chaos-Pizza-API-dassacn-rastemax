@@ -1,10 +1,25 @@
-# Chaos Pizza API
+# Chaos Pizza API (v1.1.0)
 
-Simple pizza delivery API.
+Une API de commande de pizza, désormais stable sous charge.
 
-## Install
+## Installation
+```bash
 npm install
+```
 
-## Run
+## Lancement de l'API
+```bash
 npm start
-# Chaos-Pizza-API-dassacn-rastemax
+```
+
+## Effectuer un test de montée en charge (Load Test)
+L'API doit être lancée dans un terminal séparé au préalable.
+```bash
+npm run load-test
+```
+Ce script utilise **Artillery** (configuré dans `loadtest.yml`) pour simuler une "ruée sur les 50 Margheritas" à une cadence de 20 requêtes par seconde.
+
+## Documentation
+- [Rapport de Performance](./docs/performance.md) (Avant / Après)
+- [ADR Index](./docs/adr/) : Historique des décisions architecturales.
+- [Journal des Modifications](./CHANGELOG.md) (Changelog)
