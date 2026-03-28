@@ -58,27 +58,35 @@ function createOrder(order, cb) {
 
   const promoUsed = order.promoCode || "";
 
-  // Queue the database work to prevent transaction overlap
+  // Queue the database work to prevent transaction overlap (avoiding "SQLITE_ERROR: cannot start a transaction within a transaction")
   orderQueue = orderQueue.then(() => new Promise((resolve) => {
     db.serialize(() => {
-      db.run("BEGIN TRANSACTION", (errBegin) => {
+      // BEGIN IMMEDIATE locks the database for writing immediately, preventing other concurrent writers 
+      // from starting a transaction and later failing with SQLITE_BUSY.
+      db.run("BEGIN IMMEDIATE TRANSACTION", (errBegin) => {
         if (errBegin) {
-          cb({ error: "Failed to start transaction" });
+          console.error("Critical: Could not start transaction:", errBegin);
+          cb({ error: "Service temporarily unavailable (concurrency lock)" });
           return resolve();
         }
 
         let itemsProcessed = 0;
         let hasError = false;
 
-        const cleanup = (errorMsg) => {
+        // Cleanup helper to handle rollbacks and errors consistently
+        const cleanupAndRollback = (errorMsg, logMsg = null) => {
           if (hasError) return;
           hasError = true;
-          db.run("ROLLBACK", () => {
+          if (logMsg) console.warn(`Order failed: ${logMsg}`);
+
+          db.run("ROLLBACK", (errRollback) => {
+            if (errRollback) console.error("Critical: Rollback failed!", errRollback);
             cb({ error: errorMsg });
             resolve();
           });
         };
 
+        // Process each item in the order to deduct stock safely
         for (const item of order.items) {
           const pizzaId = item.pizzaId;
           const qty = item.qty || 1;
@@ -89,30 +97,38 @@ function createOrder(order, cb) {
             function (errUpdate) {
               if (hasError) return;
 
-              if (errUpdate) return cleanup("Internal database error");
-              if (this.changes === 0) return cleanup(`Not enough stock for pizza ID ${pizzaId}`);
+              if (errUpdate) return cleanupAndRollback("Internal database error during stock update", errUpdate.message);
+
+              // If no rows were changed, it means stock was insufficient for this pizza
+              if (this.changes === 0) {
+                return cleanupAndRollback(`Rupture de stock pour la pizza (ID: ${pizzaId})`, `Insufficient stock for ID ${pizzaId}`);
+              }
 
               itemsProcessed++;
               if (itemsProcessed === order.items.length) {
-                // Done with all items, insert the order
+                // All items validated and stock reserved, proceed to record order
                 db.run(
                   "INSERT INTO orders (total, status, promo) VALUES (?, 'CREATED', ?)",
                   [total, promoUsed],
                   function (errInsert) {
                     if (hasError) return;
-                    if (errInsert) return cleanup("Failed to record order");
+                    if (errInsert) return cleanupAndRollback("Failed to record order in database", errInsert.message);
 
                     const newOrderId = this.lastID;
                     db.run("COMMIT", (errCommit) => {
+                      if (hasError) return;
+
                       if (errCommit) {
-                        cb({ error: "Transaction failed to commit" });
-                      } else {
-                        cb(null, {
-                          id: newOrderId,
-                          total: utils.round(total),
-                          status: "CREATED"
-                        });
+                        console.error("Critical: Commit failed!", errCommit);
+                        return cleanupAndRollback("Final transaction confirmation failed");
                       }
+
+                      // Success path
+                      cb(null, {
+                        id: newOrderId,
+                        total: utils.round(total),
+                        status: "CREATED"
+                      });
                       resolve();
                     });
                   }
@@ -124,9 +140,10 @@ function createOrder(order, cb) {
       });
     });
   })).catch(err => {
-    console.error("Order queue error:", err);
+    console.error("Order processing queue exception:", err);
   });
 }
+
 
 function getOrders(cb) {
   db.all("SELECT * FROM orders", (err, rows) => {

@@ -12,9 +12,11 @@ Lors des tests de charge, nous avons identifié que la mise à jour des stocks �
 L'utilisation de SQLite avec le driver Node.js (`sqlite3`) pose problème lors de l'utilisation de transactions explicites (`BEGIN TRANSACTION`) sous haute charge, car le driver ne gère pas nativement l'isolation des transactions par requête sur une connexion partagée, provoquant des erreurs "cannot start a transaction within a transaction".
 
 ## Décision
-Nous avons décidé d'implémenter une **file d'attente (Promise Queue)** dans le service `orderManager.js` pour sérialiser l'accès aux opérations de base de données critiques. Chaque création de commande est enfermée dans une transaction SQLite (`BEGIN` / `COMMIT`).
+Nous avons décidé d'implémenter une **file d'attente (Promise Queue)** dans le service `orderManager.js` pour sérialiser l'accès aux opérations de base de données critiques. Chaque création de commande est enfermée dans une transaction SQLite.
 
-De plus, nous utilisons une clause `WHERE stock >= qty` dans la requête `UPDATE` pour garantir qu'aucune mise à jour de stock ne puisse aboutir si les ressources sont insuffisantes, renvoyant ainsi une erreur 400 propre à l'utilisateur.
+De plus, nous utilisons explicitement la commande **`BEGIN IMMEDIATE TRANSACTION`** au lieu de la commande par défaut. Cela permet de verrouiller la base de données en écriture dès le début de la requête, empêchant d'autres processus d'entamer une transaction concurrente qui finirait par échouer avec une erreur `SQLITE_BUSY`. 
+
+Le contrôle final du stock se fait avec une clause `WHERE stock >= qty` dans la requête `UPDATE` pour garantir qu'aucune mise à jour de stock ne puisse aboutir si les ressources sont insuffisantes après le calcul du prix.
 
 ## Conséquences
 - **Avantages** : Suppression des conditions de concurrence, intégrité des données garantie, suppression des erreurs de transactions imbriquées.

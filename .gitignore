@@ -43,3 +43,6 @@ test.sh
 # Sonar
 .sonarlint/
 .scannerwork/
+
+# Base de données
+data/pizza.db

@@ -42,7 +42,7 @@ Résultats après suppression des délais et implémentation de transactions sé
 
 1.  **Suppression du Délai Artificiel** : Élimination du `setTimeout` qui pénalisait massivement les performances.
 2.  **Mises à jour Atomiques** : Utilisation d'une requête unique `UPDATE ... WHERE stock >= qty`.
-3.  **Transactions Sérialisées** : Implémentation d'une file d'attente (Promise Queue) pour garantir qu'aucune transaction concurrente ne vienne interférer, évitant les erreurs "busy" de SQLite.
+3.  **Transactions Sérialisées** : Implémentation d'une file d'attente (Promise Queue) et de transactions immédiates (`BEGIN IMMEDIATE`) pour garantir l'absence d'interférences entre requêtes, éliminant totalement les erreurs de type `SQLITE_BUSY`.
 4.  **Cohérence Multi-produits** : La logique garantit qu'une commande avec plusieurs articles est traitée comme une seule unité (tout passe ou rien ne passe).
 5.  **Requêtes Paramétrées** : Sécurisation de la base de données contre l'injection SQL.
 6.  **Modernisation du Code** : Remplacement de `var`, amélioration de la gestion d'erreurs.
