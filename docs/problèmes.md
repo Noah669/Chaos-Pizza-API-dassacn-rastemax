@@ -1,3 +1,5 @@
+# Liste de problèmes que l'on a trouvé au début du projet
+
 ## app.js
 
 Semble correct mais pas vraiment de route dedans
