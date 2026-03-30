@@ -18,6 +18,10 @@ function createOrder(order, cb) {
     return cb({ error: "invalid order: items are required" });
   }
 
+  if (!order?.email || order.email.trim() === "") {
+    return cb({ error: "invalid order: email is required" });
+  }
+
   // Calculate prices beforehand outside the database lock
   let subtotal = 0;
   for (const item of order.items) {
@@ -57,6 +61,7 @@ function createOrder(order, cb) {
   }
 
   const promoUsed = order.promoCode || "";
+  const email = order.email || null;
 
   // Queue the database work to prevent transaction overlap (avoiding "SQLITE_ERROR: cannot start a transaction within a transaction")
   orderQueue = orderQueue.then(() => new Promise((resolve) => {
@@ -108,8 +113,8 @@ function createOrder(order, cb) {
               if (itemsProcessed === order.items.length) {
                 // All items validated and stock reserved, proceed to record order
                 db.run(
-                  "INSERT INTO orders (total, status, promo) VALUES (?, 'CREATED', ?)",
-                  [total, promoUsed],
+                  "INSERT INTO orders (total, status, promo, email) VALUES (?, 'CREATED', ?, ?)",
+                  [total, promoUsed, email],
                   function (errInsert) {
                     if (hasError) return;
                     if (errInsert) return cleanupAndRollback("Failed to record order in database", errInsert.message);
@@ -160,7 +165,19 @@ function getOrders(cb) {
   });
 }
 
+function getOrdersByEmail(email, cb) {
+  db.all("SELECT * FROM orders WHERE email = ?", [email], (err, rows) => {
+    if (err) return cb(err);
+    const result = rows.map(row => ({
+      ...row,
+      total: utils.round(row.total * 1.05)
+    }));
+    cb(null, result);
+  });
+}
+
 module.exports = {
   createOrder,
-  getOrders
+  getOrders,
+  getOrdersByEmail
 };

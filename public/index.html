@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Chaos Pizza</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-100 text-gray-900">
 
   <div class="max-w-6xl mx-auto p-8">
     <h1 class="text-3xl font-bold mb-10">🍕 Chaos Pizza</h1>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-      
+
       <!-- LEFT -->
       <div class="md:col-span-2 space-y-6">
         <h2 class="text-lg font-semibold">Select your pizza</h2>
@@ -29,8 +31,11 @@
 
         <!-- Promo -->
         <div>
-          <input id="promo" type="text"
-            placeholder="Promo code"
+          <input id="promo" type="text" placeholder="Promo code" class="w-64 border rounded px-4 py-2" />
+        </div>
+        <!-- Email -->
+        <div>
+          <input id="email" type="email" required placeholder="Your email address"
             class="w-64 border rounded px-4 py-2" />
         </div>
       </div>
@@ -61,8 +66,7 @@
           Place Order
         </button>
 
-        <pre id="result"
-          class="mt-4 bg-gray-900 text-green-400 text-xs p-3 rounded overflow-auto"></pre>
+        <pre id="result" class="mt-4 bg-gray-900 text-green-400 text-xs p-3 rounded overflow-auto"></pre>
       </div>
     </div>
   </div>
@@ -70,4 +74,5 @@
 <script src="index.js"></script>
 
 </body>
+
 </html>
