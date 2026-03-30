@@ -16,14 +16,15 @@ et ce projet adhère au [Versionnement Sémantique (SemVer)](https://semver.org/
 ### Modifié
 - Refactorisation de `src/services/orderManager.js` pour éliminer les retards artificiels (suppression du goulot d'étranglement de 300ms).
 - Amélioration de la sécurité de la base de données avec l'implémentation de requêtes SQL paramétrées.
-- Mise en place d'une gestion de transactions sérialisées pour garantir l'intégrité des données sous forte charge.
+- Mise en place d'une gestion de transactions sérialisées avec **verrouillage immédiat** (`BEGIN IMMEDIATE`) pour garantir l'intégrité des données sous forte charge.
 - Modernisation du code (utilisation de `const`/`let` et des boucles for...of).
+- Exclusion de `data/pizza.db` du suivi Git (ajout au `.gitignore`).
 
 ### Corrigé
 - Correction des conditions de concurrence critiques dans la mise à jour des stocks qui permettaient des stocks négatifs.
 - Correction d'un bug où seul le stock du premier produit d'une commande était mis à jour.
 - Suppression des vulnérabilités d'injection SQL lors de la création de commandes.
-- Stabilisation de l'API lors des pics de charge ("rush").
+- Stabilisation de l'API lors des pics de charge ("rush") et réduction massive du taux d'erreurs "Database busy".
 
 ## [1.0.0] - État Initial
 - Structure désorganisée, délais artificiels et bugs critiques de concurrence.
