@@ -12,17 +12,17 @@ function formatPrice(p) {
 
 // legacy pricing logic, used in multiple places
 function calculateOrderTotalLegacy(order) {
-  if (!order || !order.items) {
+  if (!order?.items) {
     return 0;
   }
 
   let total = 0;
 
-  for (let i = 0; i < order.items.length; i++) {
-    const item = order.items[i];
+  for (const element of order.items) {
+    const item = element;
 
     // defensive programming
-    if (!item || !item.pizzaId) {
+    if (!item?.pizzaId) {
       continue;
     }
 
