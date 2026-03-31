@@ -59,10 +59,9 @@
           <span id="totalTVA">—</span>
         </div>
 
-        
 
-        <button onclick="placeOrder()"
-          class="mt-6 w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800">
+
+        <button onclick="placeOrder()" class="mt-6 w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800">
           Place Order
         </button>
 
@@ -94,59 +93,60 @@
       <span class="font-medium">${p.name}</span>
       <span class="text-gray-500">${p.price}€</span>
     `;
-    div.onclick = () => selectPizza(p, div);
-    list.appendChild(div);
-  });
-}
+        div.onclick = () => selectPizza(p, div);
+        list.appendChild(div);
+      });
+    }
 
-function selectPizza(pizza, el) {
-  document.querySelectorAll('#pizzaList > div')
-    .forEach(d => d.classList.remove('border-black'));
-  el.classList.add('border-black');
-  selectedPizza = pizza;
-  updateSummary();
-}
+    function selectPizza(pizza, el) {
+      document.querySelectorAll('#pizzaList > div')
+        .forEach(d => d.classList.remove('border-black'));
+      el.classList.add('border-black');
+      selectedPizza = pizza;
+      updateSummary();
+    }
 
-function changeQty(delta) {
-  const input = document.getElementById('qty');
-  input.value = Math.max(1, Number(input.value) + delta);
-  updateSummary();
-}
+    function changeQty(delta) {
+      const input = document.getElementById('qty');
+      input.value = Math.max(1, Number(input.value) + delta);
+      updateSummary();
+    }
 
-function updateSummary() {
-  if (!selectedPizza) return;
-  const qty = Number(document.getElementById('qty').value);
-  console.log(qty);
-  document.getElementById('summaryName').innerText =
-    `${selectedPizza.name} x${qty}`;
-  document.getElementById('summaryPrice').innerText =
-    `${selectedPizza.price * qty}€`;
-  document.getElementById('totalHT').innerText =
-    `${selectedPizza.price * qty}€`;
-  document.getElementById('totalTVA').innerText = `${Math.round(selectedPizza.price * qty * 1.1 * 100)/100}€`;
-}
+    function updateSummary() {
+      if (!selectedPizza) return;
+      const qty = Number(document.getElementById('qty').value);
+      console.log(qty);
+      document.getElementById('summaryName').innerText =
+        `${selectedPizza.name} x${qty}`;
+      document.getElementById('summaryPrice').innerText =
+        `${selectedPizza.price * qty}€`;
+      document.getElementById('totalHT').innerText =
+        `${selectedPizza.price * qty}€`;
+      document.getElementById('totalTVA').innerText = `${Math.round(selectedPizza.price * qty * 1.1 * 100) / 100}€`;
+    }
 
-function placeOrder() {
-  if (!selectedPizza) return;
+    function placeOrder() {
+      if (!selectedPizza) return;
 
-  fetch('/orders', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      items: [{
-        pizzaId: selectedPizza.id,
-        qty: Number(document.getElementById('qty').value)
-      }],
-      promoCode: document.getElementById('promo').value
-    })
-  })
-  .then(r => r.json())
-  .then(data => {
-    document.getElementById('result').innerText =
-      JSON.stringify(data, null, 2);
-  });
-}
-</script>
+      fetch('/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: [{
+            pizzaId: selectedPizza.id,
+            qty: Number(document.getElementById('qty').value)
+          }],
+          promoCode: document.getElementById('promo').value,
+          email: document.getElementById('email').value
+        })
+      })
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById('result').innerText =
+            JSON.stringify(data, null, 2);
+        });
+    }
+  </script>
 
 </body>
 
