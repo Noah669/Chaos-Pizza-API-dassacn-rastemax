@@ -1,16 +1,49 @@
 let pizzas = [];
 let selectedPizza = null;
+let elements = {};
 
-fetch('/pizzas')
-    .then(r => r.json())
-    .then(data => {
-        pizzas = data;
-        renderPizzas();
+window.onload = function () {
+    // Initializing common elements with the structure from the main branch
+    elements = {
+        qty: document.getElementById('qty'),
+        pizzaList: document.getElementById('pizzaList'),
+        result: document.getElementById('result'),
+        promo: document.getElementById('promo'),
+        email: document.getElementById('email'), // Missing in main, from feature/test
+        summaryName: document.getElementById('summaryName'),
+        summaryPrice: document.getElementById('summaryPrice'),
+        totalHT: document.getElementById('totalHT'),
+        totalTVA: document.getElementById('totalTVA'),
+        pizzas: []
+    }
+
+    // Set up quantities adjustments through the existing buttons
+    document.querySelectorAll('.setQty').forEach(btn => {
+        btn.addEventListener('click', () => {
+            changeQty(btn.textContent.trim() === '+' ? 1 : -1);
+        });
     });
 
+    // Set up order placement logic on button click
+    const orderBtn = document.getElementById('order');
+    if (orderBtn) {
+        orderBtn.addEventListener("click", placeOrder);
+    } else {
+        // Falling back to a button that may call placeOrder inline or have no ID
+        // Note: index.html was updated in Step 142/257, ensuring a consistent setup is key
+    }
+
+    // Perform initial pizza list retrieval
+    fetch('/pizzas')
+        .then(r => r.json())
+        .then(data => {
+            pizzas = data;
+            renderPizzas();
+        });
+}
+
 function renderPizzas() {
-    const list = document.getElementById('pizzaList');
-    list.innerHTML = '';
+    elements.pizzaList.innerHTML = '';
 
     pizzas.forEach(p => {
         const div = document.createElement('div');
@@ -21,35 +54,33 @@ function renderPizzas() {
       <span class="text-gray-500">${p.price}€</span>
     `;
         div.onclick = () => selectPizza(p, div);
-        list.appendChild(div);
+        elements.pizzaList.appendChild(div);
     });
+    // Update global pizzas elements to the actual nodes for easier manipulation
+    elements.pizzas = document.querySelectorAll('#pizzaList > div');
 }
 
 function selectPizza(pizza, el) {
-    document.querySelectorAll('#pizzaList > div')
-        .forEach(d => d.classList.remove('border-black'));
+    if (elements.pizzas) {
+        elements.pizzas.forEach(d => d.classList.remove('border-black'));
+    }
     el.classList.add('border-black');
     selectedPizza = pizza;
     updateSummary();
 }
 
 function changeQty(delta) {
-    const input = document.getElementById('qty');
-    input.value = Math.max(1, Number(input.value) + delta);
+    elements.qty.value = Math.max(1, Number(elements.qty.value) + delta);
     updateSummary();
 }
 
 function updateSummary() {
     if (!selectedPizza) return;
-    const qty = Number(document.getElementById('qty').value);
-    console.log(qty);
-    document.getElementById('summaryName').innerText =
-        `${selectedPizza.name} x${qty}`;
-    document.getElementById('summaryPrice').innerText =
-        `${selectedPizza.price * qty}€`;
-    document.getElementById('totalHT').innerText =
-        `${selectedPizza.price * qty}€`;
-    document.getElementById('totalTVA').innerText = `${Math.round(selectedPizza.price * qty * 1.1 * 100) / 100}€`;
+    const qty = Number(elements.qty.value);
+    elements.summaryName.innerText = `${selectedPizza.name} x${qty}`;
+    elements.summaryPrice.innerText = `${selectedPizza.price * qty}€`;
+    elements.totalHT.innerText = `${selectedPizza.price * qty}€`;
+    elements.totalTVA.innerText = `${Math.round(selectedPizza.price * qty * 1.1 * 100) / 100}€`;
 }
 
 function placeOrder() {
@@ -61,15 +92,14 @@ function placeOrder() {
         body: JSON.stringify({
             items: [{
                 pizzaId: selectedPizza.id,
-                qty: Number(document.getElementById('qty').value)
+                qty: Number(elements.qty.value)
             }],
-            promoCode: document.getElementById('promo').value,
-            email: document.getElementById('email').value
+            promoCode: elements.promo.value,
+            email: elements.email.value // Kept from feature/test/fix logic
         })
     })
         .then(r => r.json())
         .then(data => {
-            document.getElementById('result').innerText =
-                JSON.stringify(data, null, 2);
+            elements.result.innerText = JSON.stringify(data, null, 2);
         });
 }
