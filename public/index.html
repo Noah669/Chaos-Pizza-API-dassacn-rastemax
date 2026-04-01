@@ -22,9 +22,9 @@
         <!-- Quantity -->
         <div class="flex items-center gap-4">
           <span class="font-medium">Quantity</span>
-          <button onclick="changeQty(-1)" class="px-3 py-1 border rounded">−</button>
+          <button id="minusQty" class="setQty px-3 py-1 border rounded">−</button>
           <input id="qty" type="number" value="1" min="1" class="w-16 text-center border rounded" />
-          <button onclick="changeQty(1)" class="px-3 py-1 border rounded">+</button>
+          <button id="plusQty" class="setQty px-3 py-1 border rounded">+</button>
         </div>
 
         <!-- Promo -->
@@ -61,7 +61,7 @@
 
 
 
-        <button onclick="placeOrder()" class="mt-6 w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800">
+        <button id="order" class="mt-6 w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800">
           Place Order
         </button>
 
